@@ -24,7 +24,7 @@ const typeDefs = `
   }
 
   type User {
-    id: ID!,
+    id: ID!
     username: String!
   }
 `;
