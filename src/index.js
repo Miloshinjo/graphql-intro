@@ -15,17 +15,43 @@ const users = [
     username: 'benderrodriguez'
   }
 ];
+// Mock tweets data
+const tweets = [
+  {
+    id: '1000',
+    body: 'GraphQL is awesome!',
+    author: '3'
+  },
+  {
+    id: '2000',
+    body: 'GraphQL was made by Facebook in 2012.',
+    author: '1'
+  },
+  {
+    id: '3000',
+    body: 'GraphQL stands for Graph Query Language',
+    author: '1'
+  }
+];
 
 // Type definitions (schema)
 const typeDefs = `
   type Query {
-    me: User!
     users(query: String): [User!]!
+    tweets(query: String): [Tweet!]!
+    me: User!
   }
 
   type User {
-    id: ID!,
+    id: ID!
     username: String!
+    tweets: [Tweet!]!
+  }
+
+  type Tweet {
+    id: ID!
+    body: String!
+    author: User!
   }
 `;
 
@@ -38,11 +64,31 @@ const resolvers = {
         return user.username.toLowerCase().includes(args.query.toLowerCase());
       });
     },
+    tweets(parent, args, ctx, info) {
+      if (!args.query) return tweets;
+      return tweets.filter(tweet => {
+        return tweet.body.toLowerCase().includes(args.query.toLowerCase());
+      });
+    },
     me() {
       return {
         id: '1',
         username: 'miloshinjo'
       };
+    }
+  },
+  Tweet: {
+    author(parent, args, ctx, info) {
+      return users.find(user => {
+        return user.id === parent.author;
+      });
+    }
+  },
+  User: {
+    tweets(parent, args, ctx, info) {
+      return tweets.filter(tweet => {
+        return tweet.author === parent.id;
+      });
     }
   }
 };
