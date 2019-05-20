@@ -1,4 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga';
+import uuidv4 from 'uuid/v4';
 
 // Mock user data defining 3 users
 const users = [
@@ -42,6 +43,10 @@ const typeDefs = `
     me: User!
   }
 
+  type Mutation {
+    createUser(username: String!): User!
+  }
+
   type User {
     id: ID!
     username: String!
@@ -75,6 +80,26 @@ const resolvers = {
         id: '1',
         username: 'miloshinjo'
       };
+    }
+  },
+  Mutation: {
+    createUser(parent, args, ctx, info) {
+      const usernameTaken = users.some(user => {
+        return user.username === args.username;
+      });
+
+      if (usernameTaken) {
+        throw new Error('Username is taken');
+      }
+
+      const user = {
+        id: uuidv4(),
+        username: args.username
+      };
+
+      users.push(user);
+
+      return user;
     }
   },
   Tweet: {
