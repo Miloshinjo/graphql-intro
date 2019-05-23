@@ -2,7 +2,7 @@ import { GraphQLServer } from 'graphql-yoga';
 import uuidv4 from 'uuid/v4';
 
 // Mock user data defining 3 users
-const users = [
+let users = [
   {
     id: '1',
     username: 'miloshinjo'
@@ -17,7 +17,7 @@ const users = [
   }
 ];
 // Mock tweets data
-const tweets = [
+let tweets = [
   {
     id: '1000',
     body: 'GraphQL is awesome!',
@@ -44,7 +44,29 @@ const typeDefs = `
   }
 
   type Mutation {
-    createUser(username: String!): User!
+    createUser(data: CreateUserInput!): User!
+    deleteUser(id: ID!): User!
+    updateUser(id: ID!, data: UpdateUserInput!): User!
+    createTweet(data: CreateTweetInput!): Tweet!
+    deleteTweet(id: ID!): Tweet!
+    updateTweet(id: ID!, data: UpdateTweetInput!): Tweet!
+  }
+
+  input CreateUserInput {
+    username: String!
+  }
+
+  input UpdateUserInput {
+    username: String
+  }
+
+  input CreateTweetInput {
+    body: String!
+    author: ID!
+  }
+
+  input UpdateTweetInput {
+    body: String
   }
 
   type User {
@@ -85,7 +107,7 @@ const resolvers = {
   Mutation: {
     createUser(parent, args, ctx, info) {
       const usernameTaken = users.some(user => {
-        return user.username === args.username;
+        return user.username === args.data.username;
       });
 
       if (usernameTaken) {
@@ -94,12 +116,82 @@ const resolvers = {
 
       const user = {
         id: uuidv4(),
-        username: args.username
+        ...args.data
       };
 
       users.push(user);
 
       return user;
+    },
+    deleteUser(parent, args, ctx, info) {
+      const userIndex = users.findIndex(user => {
+        return user.id === args.id;
+      });
+
+      if (userIndex === -1) throw new Error('Users not found');
+
+      const deletedUsers = users.splice(userIndex, 1);
+
+      tweets = tweets.filter(tweet => {
+        return tweet.author !== args.id;
+      });
+
+      return deletedUsers[0];
+    },
+    updateUser(parent, args, ctx, info) {
+      const user = users.find(user => user.id === args.id);
+
+      if (!user) throw new Error('User not found');
+
+      if (typeof args.data.username === 'string') {
+        const usernameTaken = users.some(user => user.username === args.data.username);
+
+        if (usernameTaken) throw new Error('Email taken');
+
+        user.username = args.data.username;
+      }
+
+      return user;
+    },
+    createTweet(parent, args, ctx, info) {
+      const userExists = users.some(user => {
+        return user.id === args.data.author;
+      });
+
+      if (!userExists) {
+        throw new Error('User not found');
+      }
+
+      const tweet = {
+        id: uuidv4(),
+        ...args.data
+      };
+
+      tweets.push(tweet);
+
+      return tweet;
+    },
+    deleteTweet(parent, args, ctx, info) {
+      const tweetIndex = tweets.findIndex(tweet => {
+        return tweet.id === args.id;
+      });
+
+      if (tweetIndex === -1) throw new Error('Tweets not found');
+
+      const deletedTweets = tweets.splice(tweetIndex, 1);
+
+      return deletedTweets[0];
+    },
+    updateTweet(parent, args, ctx, info) {
+      const tweet = tweets.find(tweet => tweet.id === args.id);
+
+      if (!tweet) throw new Error('Tweet not found');
+
+      if (typeof args.data.body === 'string') {
+        tweet.body = args.data.body;
+      }
+
+      return tweet;
     }
   },
   Tweet: {
