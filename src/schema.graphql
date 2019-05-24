@@ -1,0 +1,43 @@
+type Query {
+  users(query: String): [User!]!
+  tweets(query: String): [Tweet!]!
+  me: User!
+}
+
+type Mutation {
+  createUser(data: CreateUserInput!): User!
+  deleteUser(id: ID!): User!
+  updateUser(id: ID!, data: UpdateUserInput!): User!
+  createTweet(data: CreateTweetInput!): Tweet!
+  deleteTweet(id: ID!): Tweet!
+  updateTweet(id: ID!, data: UpdateTweetInput!): Tweet!
+}
+
+input CreateUserInput {
+  username: String!
+}
+
+input UpdateUserInput {
+  username: String
+}
+
+input CreateTweetInput {
+  body: String!
+  author: ID!
+}
+
+input UpdateTweetInput {
+  body: String
+}
+
+type User {
+  id: ID!
+  username: String!
+  tweets: [Tweet!]!
+}
+
+type Tweet {
+  id: ID!
+  body: String!
+  author: User!
+}
