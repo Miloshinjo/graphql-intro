@@ -146,7 +146,7 @@ const resolvers = {
       if (typeof args.data.username === 'string') {
         const usernameTaken = users.some(user => user.username === args.data.username);
 
-        if (usernameTaken) throw new Error('Email taken');
+        if (usernameTaken) throw new Error('Username taken');
 
         user.username = args.data.username;
       }
