@@ -42,7 +42,7 @@ const Mutation = {
     if (typeof args.data.username === 'string') {
       const usernameTaken = db.users.some(user => user.username === args.data.username);
 
-      if (usernameTaken) throw new Error('Email taken');
+      if (usernameTaken) throw new Error('Username taken');
 
       user.username = args.data.username;
     }
